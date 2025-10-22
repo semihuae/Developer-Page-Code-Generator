@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Page Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+        }
+        .textarea-code {
+            resize: vertical;
+            min-height: 200px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
+        <h1 class="text-3xl font-extrabold text-blue-600 mb-2">Developer Page Code Generator</h1>
+        <p class="text-gray-600 mb-8">Enter the required information for your application's Privacy Policy and Support pages. The system will automatically generate the final HTML code.</p>
+
+        <!-- USER INPUTS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 p-4 border border-blue-200 rounded-lg bg-blue-50">
+            <h2 class="md:col-span-2 text-xl font-semibold text-blue-800 mb-2">1. Required Information</h2>
+            
+            <div>
+                <label for="appName" class="block text-sm font-medium text-gray-700">App Name (<span class="font-mono text-red-500">[APP_NAME]</span>)</label>
+                <input type="text" id="appName" value="Awesome Game Title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address (<span class="font-mono text-red-500">[CONTACT_EMAIL]</span>)</label>
+                <input type="email" id="email" value="support@examplegame.com" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Name/Developer Name (<span class="font-mono text-red-500">[DEV_NAME]</span>)</label>
+                <input type="text" id="name" value="John Doe (Software Developer)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number (Optional) (<span class="font-mono text-red-500">[PHONE_NUMBER]</span>)</label>
+                <input type="tel" id="phone" value="+1 555 123 45 67" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+
+        <!-- GENERATE BUTTON -->
+        <div class="text-center mb-10">
+            <button onclick="generateFiles()" class="px-8 py-3 bg-green-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-green-600 transition duration-200 transform hover:scale-105">
+                2. Generate HTML Files
+            </button>
+        </div>
+
+        <!-- OUTPUT AREAS -->
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">3. Generated HTML Code (Copy Below)</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <label for="privacyOutput" class="block text-lg font-medium text-gray-700 mb-2">Privacy Policy</label>
+                <textarea id="privacyOutput" readonly class="textarea-code block w-full rounded-md border border-green-400 shadow-md p-3 bg-green-50"></textarea>
+                <button onclick="copyToClipboard('privacyOutput', this)" class="mt-2 w-full py-2 bg-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 transition">Copy</button>
+            </div>
+            <div>
+                <label for="supportOutput" class="block text-lg font-medium text-gray-700 mb-2">Support Page</label>
+                <textarea id="supportOutput" readonly class="textarea-code block w-full rounded-md border border-green-400 shadow-md p-3 bg-green-50"></textarea>
+                <button onclick="copyToClipboard('supportOutput', this)" class="mt-2 w-full py-2 bg-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 transition">Copy</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- HIDDEN TEMPLATES (Stored internally in JS) ---
+        const PRIVACY_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[APP_NAME] Privacy Policy</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+    <header><h1>[APP_NAME] Privacy Policy</h1></header>
+    <main>
+        <p>This policy is prepared for the <b>[APP_NAME]</b> application developed by <b>[DEV_NAME]</b>.</p>
+        <p><b>Contact:</b> If you have any questions about this policy, please email us at <b>[CONTACT_EMAIL]</b>.</p>
+        <h2>Data Collection</h2>
+        <p>Our application generally does not collect any personally identifiable information. If we collect any data, it will typically be basic, non-personal device identifiers or anonymous analytics data used solely to improve the application's performance and stability.</p>
+        <h2>Policy Updates</h2>
+        <p>We may update our Privacy Policy from time to time. You are advised to review this page periodically for any changes. This policy was last updated on October 2025.</p>
+    </main>
+</body>
+</html>
+        `.trim();
+
+        const SUPPORT_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[APP_NAME] Support</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+    <header><h1>[APP_NAME] Support and Contact</h1></header>
+    <main>
+        <p>App Name: <b>[APP_NAME]</b></p>
+        <p>Developer: <b>[DEV_NAME]</b></p>
+        <h2>Contact Channels</h2>
+        <p><b>Email:</b> For all technical issues, support questions, and feature requests, please contact us via email at <b>[CONTACT_EMAIL]</b>. We aim to respond within 48 hours.</p>
+        <p><b>Phone:</b> For urgent matters or quick support, you can reach the developer at: <b>[PHONE_NUMBER]</b></p>
+        <h2>FAQs and Troubleshooting</h2>
+        <p>The Frequently Asked Questions (FAQ) and troubleshooting section will be added here soon.</p>
+    </main>
+</body>
+</html>
+        `.trim();
+        // --- END OF HIDDEN TEMPLATES ---
+
+        function generateFiles() {
+            // 1. Get Inputs
+            const appName = document.getElementById('appName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!appName || !email || !name) {
+                alertUser('Please fill in App Name, Email Address, and Name/Developer Name fields.');
+                return;
+            }
+
+            // 2. Replacement List (Using Global Regex)
+            const replacements = [
+                { placeholder: /\[APP_NAME\]/g, value: appName },
+                { placeholder: /\[CONTACT_EMAIL\]/g, value: email },
+                { placeholder: /\[DEV_NAME\]/g, value: name },
+                { placeholder: /\[PHONE_NUMBER\]/g, value: phone },
+            ];
+
+            // 3. Generate Privacy Policy
+            let newPrivacy = PRIVACY_TEMPLATE;
+            replacements.forEach(r => {
+                newPrivacy = newPrivacy.replace(r.placeholder, r.value);
+            });
+
+            // 4. Generate Support Page
+            let newSupport = SUPPORT_TEMPLATE;
+            replacements.forEach(r => {
+                newSupport = newSupport.replace(r.placeholder, r.value);
+            });
+
+            // 5. Display Outputs
+            document.getElementById('privacyOutput').value = newPrivacy;
+            document.getElementById('supportOutput').value = newSupport;
+
+            alertUser('HTML Codes Generated Successfully!');
+        }
+
+        // Copy function
+        function copyToClipboard(elementId, buttonElement) {
+            const textarea = document.getElementById(elementId);
+            if (textarea && textarea.value) {
+                // Using document.execCommand('copy') due to iframe restrictions
+                textarea.select();
+                document.execCommand('copy');
+                
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = 'Copied!';
+                buttonElement.classList.remove('bg-gray-200');
+                buttonElement.classList.add('bg-green-400');
+                buttonElement.classList.remove('hover:bg-gray-300');
+                
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.add('bg-gray-200');
+                    buttonElement.classList.remove('bg-green-400');
+                    buttonElement.classList.add('hover:bg-gray-300');
+                }, 1500);
+            } else {
+                alertUser('Please generate files first.');
+            }
+        }
+
+        // Custom Modal Alert (replacing alert())
+        function alertUser(message) {
+            let alertBox = document.getElementById('customAlert');
+            if (!alertBox) {
+                alertBox = document.createElement('div');
+                alertBox.id = 'customAlert';
+                alertBox.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-xl transition-transform transform translate-x-full z-50';
+                document.body.appendChild(alertBox);
+            }
+            alertBox.textContent = message;
+            alertBox.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                alertBox.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Generate default outputs on page load
+        window.onload = function() {
+            generateFiles(); 
+            alertUser('Welcome! Enter the information to generate your pages.');
+        };
+    </script>
+</body>
+</html>
