@@ -208,17 +208,19 @@
                         <div>
                             <label for="privacyOutput" class="block text-lg font-medium text-gray-300 mb-2">Privacy Policy</label>
                             <textarea id="privacyOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
-                            <div class="flex space-x-4 mt-3">
-                                <button onclick="copyToClipboard('privacyOutput', this)" class="w-1/2 py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
-                                <button onclick="previewCode('privacyOutput', 'Privacy Policy')" class="w-1/2 py-3 bg-blue-500 text-white rounded-lg text-base font-medium hover:bg-blue-600 transition">Preview</button>
+                            <div class="grid grid-cols-3 gap-2 mt-3">
+                                <button onclick="copyToClipboard('privacyOutput', this)" class="py-3 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">Copy HTML</button>
+                                <button onclick="previewCode('privacyOutput', 'Privacy Policy')" class="py-3 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition">Preview</button>
+                                <button onclick="copyForBlogspot('privacyOutput', this)" class="py-3 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition">Copy for Blogspot</button>
                             </div>
                         </div>
                         <div>
                             <label for="supportOutput" class="block text-lg font-medium text-gray-300 mb-2">Support Page</label>
                             <textarea id="supportOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
-                            <div class="flex space-x-4 mt-3">
-                                <button onclick="copyToClipboard('supportOutput', this)" class="w-1/2 py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
-                                <button onclick="previewCode('supportOutput', 'Support Page')" class="w-1/2 py-3 bg-blue-500 text-white rounded-lg text-base font-medium hover:bg-blue-600 transition">Preview</button>
+                            <div class="grid grid-cols-3 gap-2 mt-3">
+                                <button onclick="copyToClipboard('supportOutput', this)" class="py-3 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">Copy HTML</button>
+                                <button onclick="previewCode('supportOutput', 'Support Page')" class="py-3 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition">Preview</button>
+                                <button onclick="copyForBlogspot('supportOutput', this)" class="py-3 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition">Copy for Blogspot</button>
                             </div>
                         </div>
                     </div>
@@ -465,7 +467,7 @@
             }
         }
 
-        // --- NEW PREVIEW FUNCTIONALITY ---
+        // --- PREVIEW FUNCTIONALITY ---
         function previewCode(elementId, title) {
             const textarea = document.getElementById(elementId);
             if (!textarea || !textarea.value) {
@@ -484,7 +486,6 @@
             `;
             
             // Inject warning right after the <body> tag for the preview only
-            // This ensures the original textarea value remains clean
             const modifiedContent = htmlContent.replace(/<body>/, `<body>${previewWarning}`);
 
             try {
@@ -505,8 +506,66 @@
             }
         }
         // --- END PREVIEW FUNCTIONALITY ---
+        
+        // --- BLOGSPOT COPY FUNCTIONALITY (Extracts content inside <body>) ---
+        function copyForBlogspot(elementId, buttonElement) {
+            const textarea = document.getElementById(elementId);
+            if (!textarea || !textarea.value) {
+                alertUser('Please generate files first before copying for Blogspot.');
+                return;
+            }
 
-        // Copy function
+            const fullHtml = textarea.value;
+            
+            // Find content between <body> and </body>
+            const startBodyIndex = fullHtml.indexOf('<body>');
+            const endBodyIndex = fullHtml.indexOf('</body>');
+
+            if (startBodyIndex === -1 || endBodyIndex === -1 || startBodyIndex >= endBodyIndex) {
+                alertUser('Could not find body tags for Blogspot extraction.');
+                return;
+            }
+
+            // Start after <body> tag
+            const startContent = startBodyIndex + '<body>'.length;
+
+            // Extract the content inside <body>...</body>
+            let blogspotContent = fullHtml.substring(startContent, endBodyIndex).trim();
+            
+            // Clean up extra whitespace/newlines generated by template string formatting
+            // This makes the pasted HTML cleaner for CMS editors
+            blogspotContent = blogspotContent.replace(/^\s*\n/gm, '').replace(/\n\s*$/, '').trim();
+
+            // Use a temporary textarea to copy the extracted content
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = blogspotContent;
+            document.body.appendChild(tempTextarea);
+            
+            // Select and copy
+            tempTextarea.select();
+            document.execCommand('copy');
+            
+            document.body.removeChild(tempTextarea);
+
+            // Provide visual feedback
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Copied!';
+            buttonElement.classList.remove('bg-orange-500');
+            buttonElement.classList.add('bg-indigo-400');
+            buttonElement.classList.remove('hover:bg-orange-600');
+            
+            setTimeout(() => {
+                buttonElement.textContent = originalText;
+                buttonElement.classList.add('bg-orange-500');
+                buttonElement.classList.remove('bg-indigo-400');
+                buttonElement.classList.add('hover:bg-orange-600');
+            }, 1500);
+            
+            alertUser('Blogspot content copied to clipboard. Paste into the HTML editor view.');
+        }
+
+
+        // Copy function (for full HTML)
         function copyToClipboard(elementId, buttonElement) {
             const textarea = document.getElementById(elementId);
             if (textarea && textarea.value) {
@@ -526,6 +585,8 @@
                     buttonElement.classList.remove('bg-indigo-400');
                     buttonElement.classList.add('hover:bg-green-600');
                 }, 1500);
+
+                alertUser('Full HTML copied to clipboard.');
             } else {
                 alertUser('Please generate files first.');
             }
