@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Page Generator</title>
+    <title>Developer Page Generator | SKCore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7fafc;
+            background-color: #1f2937; /* Very Dark Gray Background (Gray-800) */
+            color: #d1d5db; /* Default light gray text for body */
+            min-height: 100vh;
+            display: flex; /* Sidebar ve İçerik için Flex */
         }
         .textarea-code {
             resize: vertical;
@@ -17,61 +20,271 @@
             font-family: monospace;
             font-size: 0.85rem;
         }
+        /* Modern Indigo Accent */
+        .text-accent { color: #818cf8; } /* Indigo-400 for contrast */
+        .bg-accent { background-color: #4f46e5; }
+        .hover\:bg-accent\:hover:hover { background-color: #4338ca; }
+        .focus\:ring-accent:focus { ring-color: #818cf8; }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: 280px;
+            /* MD öncesi fixed/transform mobil davranışını koru */
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            z-index: 50;
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .sidebar-closed {
+            width: 72px; /* Small icon view */
+        }
+        .sidebar-closed .sidebar-full-text {
+            display: none;
+        }
+        .sidebar-closed .sidebar-icon-only {
+            display: block !important;
+        }
+        
+        /* Content Area */
+        #content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                height: 100%;
+                transform: translateX(-100%);
+            }
+            .sidebar-open-mobile {
+                transform: translateX(0) !important;
+            }
+            #content-area {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
-        <h1 class="text-3xl font-extrabold text-blue-600 mb-2">Developer Page Code Generator</h1>
-        <p class="text-gray-600 mb-8">Enter the required information for your application's Privacy Policy and Support pages. The system will automatically generate the final HTML code.</p>
-
-        <!-- USER INPUTS -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 p-4 border border-blue-200 rounded-lg bg-blue-50">
-            <h2 class="md:col-span-2 text-xl font-semibold text-blue-800 mb-2">1. Required Information</h2>
-            
-            <div>
-                <label for="appName" class="block text-sm font-medium text-gray-700">App Name (<span class="font-mono text-red-500">[APP_NAME]</span>)</label>
-                <input type="text" id="appName" value="Awesome Game Title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+<body class="md:flex">
+    
+    <!-- Left Sidebar (Gezinme Menüsü) -->
+    <!-- `fixed md:sticky` kaldırıldı. Mobil davranış artık sadece CSS @media bloğunda yönetiliyor. -->
+    <nav id="sidebar" class="bg-gray-900 border-r border-gray-700 h-screen top-0 p-4 flex flex-col transition-all">
+        
+        <!-- Branding ve Kapatma Butonu -->
+        <div class="flex items-center justify-between pb-6 mb-6 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <img src="https://i.ibb.co/QtmxFc3/SKCore-Logo.png" alt="SKCore Logo" class="h-9 w-auto rounded-md">
+                <span class="text-3xl font-black text-white tracking-tight sidebar-full-text">SKCore</span>
             </div>
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email Address (<span class="font-mono text-red-500">[CONTACT_EMAIL]</span>)</label>
-                <input type="email" id="email" value="support@examplegame.com" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Name/Developer Name (<span class="font-mono text-red-500">[DEV_NAME]</span>)</label>
-                <input type="text" id="name" value="John Doe (Software Developer)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div>
-                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number (Optional) (<span class="font-mono text-red-500">[PHONE_NUMBER]</span>)</label>
-                <input type="tel" id="phone" value="+1 555 123 45 67" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-            </div>
-        </div>
-
-        <!-- GENERATE BUTTON -->
-        <div class="text-center mb-10">
-            <button onclick="generateFiles()" class="px-8 py-3 bg-green-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-green-600 transition duration-200 transform hover:scale-105">
-                2. Generate HTML Files
+            <!-- Toggle Button -->
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white transition hidden md:block" aria-label="Toggle Sidebar">
+                <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-full-text"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+                <svg id="openIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon-only hidden"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </button>
         </div>
-
-        <!-- OUTPUT AREAS -->
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">3. Generated HTML Code (Copy Below)</h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-                <label for="privacyOutput" class="block text-lg font-medium text-gray-700 mb-2">Privacy Policy</label>
-                <textarea id="privacyOutput" readonly class="textarea-code block w-full rounded-md border border-green-400 shadow-md p-3 bg-green-50"></textarea>
-                <button onclick="copyToClipboard('privacyOutput', this)" class="mt-2 w-full py-2 bg-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 transition">Copy</button>
-            </div>
-            <div>
-                <label for="supportOutput" class="block text-lg font-medium text-gray-700 mb-2">Support Page</label>
-                <textarea id="supportOutput" readonly class="textarea-code block w-full rounded-md border border-green-400 shadow-md p-3 bg-green-50"></textarea>
-                <button onclick="copyToClipboard('supportOutput', this)" class="mt-2 w-full py-2 bg-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 transition">Copy</button>
-            </div>
+        
+        <!-- Navigation Links -->
+        <ul class="space-y-3 flex-grow">
+            <!-- Dashboard Link -->
+            <li>
+                <button onclick="switchView('dashboard')" class="w-full flex items-center p-3 rounded-xl transition duration-150 text-white bg-gray-800 hover:bg-gray-700 active-link">
+                    <!-- Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <!-- Text -->
+                    <span class="font-medium sidebar-full-text">Dashboard</span>
+                    <span class="sidebar-icon-only hidden ml-0.5" title="Dashboard">🏠</span>
+                </button>
+            </li>
+            
+            <!-- Generator Link -->
+            <li>
+                <button onclick="switchView('generator')" class="w-full flex items-center p-3 rounded-xl transition duration-150 text-gray-300 hover:bg-gray-800 hover:text-white inactive-link">
+                    <!-- Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                    <!-- Text -->
+                    <span class="font-medium sidebar-full-text">Page Generator</span>
+                    <span class="sidebar-icon-only hidden ml-0.5" title="Page Generator">📄</span>
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Footer / Developer Info (sadece tam metin görünümünde) -->
+        <div class="mt-8 border-t border-gray-700 pt-4 sidebar-full-text">
+            <p class="text-xs text-gray-500">SKCore App Shell v1.1</p>
         </div>
+    </nav>
 
-    </div>
+    <!-- Content Area (Dashboard ve Generator İçeriği Buraya Gelecek) -->
+    <main id="content-area" class="w-full md:p-8 overflow-y-auto">
+        
+        <!-- Mobile Menu Toggle Button (Sadece mobil için) -->
+        <button id="mobileMenuButton" onclick="toggleMobileSidebar()" class="fixed top-4 left-4 z-50 p-2 bg-gray-900 rounded-full shadow-lg md:hidden text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view hidden">
+                <div class="bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
+                    <h1 class="text-4xl font-extrabold text-accent mb-4">Dashboard (Ana Sayfa)</h1>
+                    <p class="text-gray-400 mb-6">Hoş geldiniz! Burası uygulamanızın ana kontrol paneli olacak. Sol menüden Page Generator'a geçebilirsiniz.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                            <h3 class="text-xl font-bold text-white mb-2">3 Sayfa Oluşturuldu</h3>
+                            <p class="text-gray-500">Bugüne kadar oluşturulan sayfa sayısı.</p>
+                        </div>
+                        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                            <h3 class="text-xl font-bold text-white mb-2">Son Güncelleme</h3>
+                            <p class="text-gray-500">Generator: 2025-10-22</p>
+                        </div>
+                        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                            <h3 class="text-xl font-bold text-white mb-2">Hızlı Erişim</h3>
+                            <button onclick="switchView('generator')" class="text-accent hover:text-indigo-400 font-semibold mt-2">Generator'a Git &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generator View (Mevcut İçerik) -->
+            <div id="generator-view" class="view hidden">
+                <div class="max-w-6xl mx-auto bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
+                    
+                    <h1 class="text-3xl font-extrabold text-white mb-2">Developer Page Content Generator</h1>
+                    <p class="text-gray-400 mb-10">Enter the required information below. Your customized Privacy Policy and Support pages will be generated instantly, using the modern SKCore template structure.</p>
+
+                    <!-- USER INPUTS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 p-6 rounded-xl bg-gray-800 border border-gray-700">
+                        <h2 class="md:col-span-2 text-xl font-bold text-gray-200 mb-4">1. Required Information</h2>
+                        
+                        <div>
+                            <label for="appName" class="block text-sm font-medium text-gray-300 mb-1">App Name (<span class="font-mono text-red-400">[APP_NAME]</span>)</label>
+                            <input type="text" id="appName" value="Awesome Game Title" class="mt-1 block w-full rounded-lg border-gray-600 bg-gray-700 text-white shadow-sm p-3 border focus:ring-accent focus:border-accent">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email Address (<span class="font-mono text-red-400">[CONTACT_EMAIL]</span>)</label>
+                            <input type="email" id="email" value="support@examplegame.com" class="mt-1 block w-full rounded-lg border-gray-600 bg-gray-700 text-white shadow-sm p-3 border focus:ring-accent focus:border-accent">
+                        </div>
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Name/Developer Name (<span class="font-mono text-red-400">[DEV_NAME]</span>)</label>
+                            <input type="text" id="name" value="John Doe (Software Developer)" class="mt-1 block w-full rounded-lg border-gray-600 bg-gray-700 text-white shadow-sm p-3 border focus:ring-accent focus:border-accent">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Phone Number (Optional) (<span class="font-mono text-red-400">[PHONE_NUMBER]</span>)</label>
+                            <input type="tel" id="phone" value="+1 555 123 45 67" class="mt-1 block w-full rounded-lg border-gray-600 bg-gray-700 text-white shadow-sm p-3 border focus:ring-accent focus:border-accent">
+                        </div>
+                    </div>
+
+                    <!-- GENERATE BUTTON -->
+                    <div class="text-center mb-12">
+                        <button onclick="generateFiles()" class="px-12 py-4 bg-accent text-white font-bold text-xl rounded-full shadow-lg shadow-indigo-500/50 hover:bg-accent\:hover transition duration-300 transform hover:scale-105">
+                            2. Generate HTML Files
+                        </button>
+                    </div>
+
+                    <!-- OUTPUT AREAS -->
+                    <h2 class="text-2xl font-semibold text-gray-200 mb-6 border-b border-gray-700 pb-2">3. Generated HTML Code (Copy Below)</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <label for="privacyOutput" class="block text-lg font-medium text-gray-300 mb-2">Privacy Policy</label>
+                            <textarea id="privacyOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
+                            <button onclick="copyToClipboard('privacyOutput', this)" class="mt-3 w-full py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                        </div>
+                        <div>
+                            <label for="supportOutput" class="block text-lg font-medium text-gray-300 mb-2">Support Page</label>
+                            <textarea id="supportOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
+                            <button onclick="copyToClipboard('supportOutput', this)" class="mt-3 w-full py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div> <!-- max-w-6xl mx-auto End -->
+
+    </main>
 
     <script>
+        // --- VIEW MANAGEMENT ---
+        let activeView = 'dashboard';
+        let isSidebarCollapsed = false;
+        let isMobileSidebarOpen = false;
+
+        function switchView(viewName) {
+            activeView = viewName;
+            const views = document.querySelectorAll('.view');
+            const navButtons = document.querySelectorAll('#sidebar button');
+            
+            // Görünümleri Gizle/Göster
+            views.forEach(view => {
+                view.classList.add('hidden');
+            });
+            const selectedView = document.getElementById(viewName + '-view');
+            if (selectedView) {
+                selectedView.classList.remove('hidden');
+                // Eğer mobil menü açıksa, görünüm değiştirilince kapat
+                if (window.innerWidth < 768 && isMobileSidebarOpen) {
+                    toggleMobileSidebar();
+                }
+            }
+
+            // Aktif Navigasyon Butonunu Vurgula
+            navButtons.forEach(button => {
+                button.classList.remove('bg-gray-800', 'active-link');
+                button.classList.add('text-gray-300', 'hover:bg-gray-800', 'hover:text-white', 'inactive-link');
+
+                if (button.onclick.toString().includes(`switchView('${viewName}')`)) {
+                    button.classList.add('bg-gray-800', 'active-link');
+                    button.classList.remove('text-gray-300', 'inactive-link');
+                }
+            });
+            
+            // Sayfa içeriği yenilendiğinde generator çalıştırılır (varsayılan değerleri yüklemek için)
+            if (viewName === 'generator') {
+                generateFiles();
+            }
+
+            alertUser(viewName.charAt(0).toUpperCase() + viewName.slice(1) + ' sayfası açıldı.');
+        }
+
+        // Sidebar Collapse/Expand (Sadece Masaüstü)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            isSidebarCollapsed = !isSidebarCollapsed;
+            
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('sidebar-closed');
+                document.getElementById('toggleIcon').classList.add('hidden');
+                document.getElementById('openIcon').classList.remove('hidden');
+            } else {
+                sidebar.classList.remove('sidebar-closed');
+                document.getElementById('toggleIcon').classList.remove('hidden');
+                document.getElementById('openIcon').classList.add('hidden');
+            }
+        }
+
+        // Sidebar Mobile Toggle
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            isMobileSidebarOpen = !isMobileSidebarOpen;
+            
+            if (isMobileSidebarOpen) {
+                sidebar.classList.add('sidebar-open-mobile');
+            } else {
+                sidebar.classList.remove('sidebar-open-mobile');
+            }
+        }
+
+        // --- GENERATOR LOGIC ---
+
         // --- HIDDEN TEMPLATES (Stored internally in JS) ---
+        // Note: Inline CSS is used in templates for maximum compatibility when users host these pages.
         const PRIVACY_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">
@@ -79,17 +292,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[APP_NAME] Privacy Policy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; max-width: 900px; margin: auto; padding: 40px 20px; line-height: 1.8; color: #d1d5db; background-color: #1f2937; }
+        header { border-bottom: 3px solid #4f46e5; padding-bottom: 15px; margin-bottom: 30px; }
+        h1 { color: #f9fafb; font-size: 2.2rem; font-weight: 800; }
+        h2 { color: #818cf8; font-size: 1.6rem; font-weight: 700; margin-top: 40px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #4b5563; }
+        p { margin-bottom: 15px; font-weight: 500; }
+        a { color: #818cf8; text-decoration: none; border-bottom: 1px dotted #818cf8; }
+        footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #4b5563; font-size: 0.9rem; color: #9ca3af; text-align: center; }
+        ul { list-style-type: none; padding-left: 20px; }
+        li::before { content: "›"; color: #818cf8; font-weight: bold; display: inline-block; width: 1em; margin-left: -1em; }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+<body>
     <header><h1>[APP_NAME] Privacy Policy</h1></header>
     <main>
-        <p>This policy is prepared for the <b>[APP_NAME]</b> application developed by <b>[DEV_NAME]</b>.</p>
-        <p><b>Contact:</b> If you have any questions about this policy, please email us at <b>[CONTACT_EMAIL]</b>.</p>
-        <h2>Data Collection</h2>
-        <p>Our application generally does not collect any personally identifiable information. If we collect any data, it will typically be basic, non-personal device identifiers or anonymous analytics data used solely to improve the application's performance and stability.</p>
+        <p>This Privacy Policy applies to the <b>[APP_NAME]</b> application (the "App"), developed and owned by <b>[DEV_NAME]</b> (SKCore).</p>
+        
+        <h2>Contact Information</h2>
+        <p>If you have questions about this policy or our data practices, please contact us:</p>
+        <p>Email: <a href="mailto:[CONTACT_EMAIL]"><b>[CONTACT_EMAIL]</b></a></p>
+        
+        <h2>Data Collection and Use</h2>
+        <p>The App is designed to be privacy-first. We do not collect personally identifiable information (PII) such as your name, address, or email directly within the App's core functionality.</p>
+        <ul>
+            <li><strong>Non-Personal Data:</strong> We may collect anonymized usage statistics (e.g., crash reports, session length) solely to improve the App's performance and stability. This data is aggregated and cannot be used to identify individual users.</li>
+            <li><strong>Permissions:</strong> If the App requires specific permissions (e.g., camera, location), these are used *only* for the stated functionality within the App and are never stored or transmitted externally.</li>
+        </ul>
+
+        <h2>Third-Party Services</h2>
+        <p>We do not share any data with external third parties or advertisers.</p>
+        
         <h2>Policy Updates</h2>
-        <p>We may update our Privacy Policy from time to time. You are advised to review this page periodically for any changes. This policy was last updated on October 2025.</p>
+        <p>We may update this Privacy Policy periodically. We will notify you of any changes by posting the new policy on this page. This policy was last updated on <strong>October 2025</strong>.</p>
     </main>
+    <footer>
+        &copy; 2025 SKCore | All Rights Reserved.
+    </footer>
 </body>
 </html>
         `.trim();
@@ -101,18 +341,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[APP_NAME] Support</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; max-width: 900px; margin: auto; padding: 40px 20px; line-height: 1.8; color: #d1d5db; background-color: #1f2937; }
+        header { border-bottom: 3px solid #4f46e5; padding-bottom: 15px; margin-bottom: 30px; }
+        h1 { color: #f9fafb; font-size: 2.2rem; font-weight: 800; }
+        h2 { color: #818cf8; font-size: 1.6rem; font-weight: 700; margin-top: 40px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #4b5563; }
+        p { margin-bottom: 15px; font-weight: 500; }
+        a { color: #818cf8; text-decoration: none; border-bottom: 1px dotted #818cf8; }
+        footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #4b5563; font-size: 0.9rem; color: #9ca3af; text-align: center; }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+<body>
     <header><h1>[APP_NAME] Support and Contact</h1></header>
     <main>
+        <p>Welcome to the support page for <b>[APP_NAME]</b>, developed by <b>[DEV_NAME]</b> (SKCore).</p>
+        
+        <h2>Primary Contact Channel</h2>
+        <p>The fastest way to get support for technical issues, bug reports, and feature requests is via email. We aim to respond to all inquiries within 48 hours.</p>
+        <p style="font-size: 1.1rem; font-weight: 700;">Email: <a href="mailto:[CONTACT_EMAIL]"><b>[CONTACT_EMAIL]</b></a></p>
+        
+        <h2>Developer Details</h2>
         <p>App Name: <b>[APP_NAME]</b></p>
         <p>Developer: <b>[DEV_NAME]</b></p>
-        <h2>Contact Channels</h2>
-        <p><b>Email:</b> For all technical issues, support questions, and feature requests, please contact us via email at <b>[CONTACT_EMAIL]</b>. We aim to respond within 48 hours.</p>
-        <p><b>Phone:</b> For urgent matters or quick support, you can reach the developer at: <b>[PHONE_NUMBER]</b></p>
-        <h2>FAQs and Troubleshooting</h2>
-        <p>The Frequently Asked Questions (FAQ) and troubleshooting section will be added here soon.</p>
+        <p>Phone: <b>[PHONE_NUMBER]</b></p>
+
+        <h2>FAQs and Known Issues</h2>
+        <p>Please check for any known issues or frequently asked questions below. This section is currently under construction, but feel free to email us directly!</p>
     </main>
+    <footer>
+        &copy; 2025 SKCore | All Rights Reserved.
+    </footer>
 </body>
 </html>
         `.trim();
@@ -126,7 +385,10 @@
             const phone = document.getElementById('phone').value.trim();
 
             if (!appName || !email || !name) {
-                alertUser('Please fill in App Name, Email Address, and Name/Developer Name fields.');
+                // Sadece Generator görünümünde uyarı göster.
+                if (activeView === 'generator') {
+                     alertUser('Lütfen Uygulama Adı, E-posta ve Geliştirici Adı alanlarını doldurun.');
+                }
                 return;
             }
 
@@ -154,7 +416,9 @@
             document.getElementById('privacyOutput').value = newPrivacy;
             document.getElementById('supportOutput').value = newSupport;
 
-            alertUser('HTML Codes Generated Successfully!');
+            if (activeView === 'generator') {
+                alertUser('HTML Kodları Başarıyla Oluşturuldu!');
+            }
         }
 
         // Copy function
@@ -166,19 +430,19 @@
                 document.execCommand('copy');
                 
                 const originalText = buttonElement.textContent;
-                buttonElement.textContent = 'Copied!';
-                buttonElement.classList.remove('bg-gray-200');
-                buttonElement.classList.add('bg-green-400');
-                buttonElement.classList.remove('hover:bg-gray-300');
+                buttonElement.textContent = 'Kopyalandı!';
+                buttonElement.classList.remove('bg-green-500');
+                buttonElement.classList.add('bg-indigo-400');
+                buttonElement.classList.remove('hover:bg-green-600');
                 
                 setTimeout(() => {
                     buttonElement.textContent = originalText;
-                    buttonElement.classList.add('bg-gray-200');
-                    buttonElement.classList.remove('bg-green-400');
-                    buttonElement.classList.add('hover:bg-gray-300');
+                    buttonElement.classList.add('bg-green-500');
+                    buttonElement.classList.remove('bg-indigo-400');
+                    buttonElement.classList.add('hover:bg-green-600');
                 }, 1500);
             } else {
-                alertUser('Please generate files first.');
+                alertUser('Lütfen önce dosyaları oluşturun.');
             }
         }
 
@@ -188,7 +452,7 @@
             if (!alertBox) {
                 alertBox = document.createElement('div');
                 alertBox.id = 'customAlert';
-                alertBox.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-xl transition-transform transform translate-x-full z-50';
+                alertBox.className = 'fixed top-4 right-4 bg-accent text-white px-5 py-3 rounded-lg shadow-xl transition-transform transform translate-x-full z-50 font-semibold';
                 document.body.appendChild(alertBox);
             }
             alertBox.textContent = message;
@@ -199,10 +463,15 @@
             }, 3000);
         }
 
-        // Generate default outputs on page load
+        // Sayfa yüklendiğinde varsayılan görünümü ayarla
         window.onload = function() {
-            generateFiles(); 
-            alertUser('Welcome! Enter the information to generate your pages.');
+            // İlk olarak Dashboard görünümünü aç
+            switchView('dashboard'); 
+            
+            // Mobil menü butonunu ayarla (eğer mobildeyse)
+            if (window.innerWidth < 768) {
+                document.getElementById('mobileMenuButton').classList.remove('hidden');
+            }
         };
     </script>
 </body>
