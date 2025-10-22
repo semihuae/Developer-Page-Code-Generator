@@ -13,7 +13,7 @@
             color: #d1d5db; /* Default light gray text for body */
             min-height: 100vh;
             display: flex; /* Sidebar ve İçerik için Flex */
-            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
         .textarea-code {
             resize: vertical;
@@ -29,10 +29,10 @@
         
         /* Sidebar Styles */
         #sidebar {
-            /* Masaüstünde daima sabit kalır */
+            /* Always fixed on desktop */
             position: fixed; 
             width: 280px;
-            height: 100%; /* Tam yükseklik */
+            height: 100%; /* Full height */
             transition: width 0.3s ease-in-out;
             z-index: 50;
             flex-shrink: 0;
@@ -41,6 +41,7 @@
         .sidebar-closed {
             width: 72px !important; /* Small icon view */
         }
+        /* Hide full text when collapsed */
         .sidebar-closed .sidebar-full-text {
             opacity: 0;
             width: 0;
@@ -48,39 +49,41 @@
             pointer-events: none;
             transition: opacity 0.1s ease-out, width 0.1s ease-out;
         }
-        /* İkon görünümünde sadece ikonu göster */
-        .sidebar-closed .sidebar-icon-only {
-            display: block !important;
+        /* Navigation items should be centered in 72px width */
+        .sidebar-closed .nav-link-item {
+            justify-content: center; /* Center icon in the 72px width */
+            padding-left: 0;
+            padding-right: 0;
         }
         
         /* Content Area */
         #content-area {
             flex-grow: 1;
-            /* Sidebar genişliğine göre margin-left ayarlandı */
+            /* Default margin for 280px sidebar */
             margin-left: 280px; 
             padding: 2rem;
             transition: margin-left 0.3s ease-in-out;
         }
         .content-area-shifted {
+            /* Margin for 72px collapsed sidebar */
             margin-left: 72px !important;
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             #sidebar {
-                /* Mobil için varsayılan olarak gizli */
+                /* Hidden by default on mobile */
                 transform: translateX(-100%);
             }
             .sidebar-open-mobile {
                 transform: translateX(0) !important;
             }
             #content-area {
-                /* Mobil görünümde menü gizlendiği için margin 0 */
+                /* No margin on mobile */
                 margin-left: 0 !important;
                 width: 100%;
             }
             .content-area-shifted {
-                /* Mobil görünümde bu sınıfın bir etkisi olmamalı */
                 margin-left: 0 !important;
             }
         }
@@ -88,19 +91,19 @@
 </head>
 <body class="md:flex">
     
-    <!-- Left Sidebar (Gezinme Menüsü) -->
-    <!-- position: fixed ve height: 100% ile kaydırmada sabit kalması sağlandı -->
+    <!-- Left Sidebar (Navigation Menu) -->
     <nav id="sidebar" class="bg-gray-900 border-r border-gray-700 top-0 p-4 flex flex-col">
         
-        <!-- Branding ve Kapatma Butonu -->
+        <!-- Branding and Collapse Button -->
         <div class="flex items-center justify-between pb-6 mb-6 border-b border-gray-700">
             <div class="flex items-center space-x-3 overflow-hidden">
                 <img src="https://i.ibb.co/QtmxFc3/SKCore-Logo.png" alt="SKCore Logo" class="h-9 w-auto rounded-md flex-shrink-0">
                 <span class="text-3xl font-black text-white tracking-tight sidebar-full-text whitespace-nowrap">SKCore</span>
             </div>
-            <!-- Toggle Button (Sadece masaüstü) -->
-            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white transition hidden md:block" aria-label="Toggle Sidebar">
-                <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+            <!-- Toggle Button (Desktop Only) -->
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white transition hidden md:block flex-shrink-0" aria-label="Toggle Sidebar">
+                <!-- Icon is managed by JS in toggleSidebar function -->
+                <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
             </button>
         </div>
         
@@ -108,40 +111,35 @@
         <ul class="space-y-3 flex-grow">
             <!-- Dashboard Link -->
             <li>
-                <button onclick="switchView('dashboard')" class="w-full flex items-center p-3 rounded-xl transition duration-150 text-white bg-gray-800 hover:bg-gray-700 active-link">
+                <button onclick="switchView('dashboard')" class="nav-link-item w-full flex items-center p-3 rounded-xl transition duration-150 text-white bg-gray-800 hover:bg-gray-700 active-link">
                     <!-- Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <!-- Text -->
                     <span class="font-medium sidebar-full-text">Dashboard</span>
-                    <!-- İkon görünümünde sadece ikon -->
-                    <span class="sidebar-icon-only hidden ml-0.5" title="Dashboard">🏠</span>
                 </button>
             </li>
             
             <!-- Generator Link -->
             <li>
-                <button onclick="switchView('generator')" class="w-full flex items-center p-3 rounded-xl transition duration-150 text-gray-300 hover:bg-gray-800 hover:text-white inactive-link">
+                <button onclick="switchView('generator')" class="nav-link-item w-full flex items-center p-3 rounded-xl transition duration-150 text-gray-300 hover:bg-gray-800 hover:text-white inactive-link">
                     <!-- Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
                     <!-- Text -->
                     <span class="font-medium sidebar-full-text">Page Generator</span>
-                    <!-- İkon görünümünde sadece ikon -->
-                    <span class="sidebar-icon-only hidden ml-0.5" title="Page Generator">📄</span>
                 </button>
             </li>
         </ul>
         
-        <!-- Footer / Developer Info (sadece tam metin görünümünde) -->
+        <!-- Footer / Developer Info (only shown when expanded) -->
         <div class="mt-8 border-t border-gray-700 pt-4 sidebar-full-text overflow-hidden">
             <p class="text-xs text-gray-500 whitespace-nowrap">SKCore App Shell v1.1</p>
         </div>
     </nav>
 
-    <!-- Content Area (Dashboard ve Generator İçeriği Buraya Gelecek) -->
-    <!-- margin-left, JS ile sidebar genişliğine göre güncellenecek -->
+    <!-- Content Area (Dashboard and Generator Content) -->
     <main id="content-area" class="w-full md:p-8 overflow-y-auto">
         
-        <!-- Mobile Menu Toggle Button (Sadece mobil için) -->
+        <!-- Mobile Menu Toggle Button (Mobile Only) -->
         <button id="mobileMenuButton" onclick="toggleMobileSidebar()" class="fixed top-4 left-4 z-50 p-2 bg-gray-900 rounded-full shadow-lg md:hidden text-white transition">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
@@ -151,27 +149,24 @@
             <!-- Dashboard View -->
             <div id="dashboard-view" class="view hidden">
                 <div class="bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
-                    <h1 class="text-4xl font-extrabold text-accent mb-4">Dashboard (Ana Sayfa)</h1>
-                    <p class="text-gray-400 mb-6">Hoş geldiniz! Burası uygulamanızın ana kontrol paneli olacak. Sol menüden Page Generator'a geçebilirsiniz.</p>
+                    <h1 class="text-4xl font-extrabold text-accent mb-4">Dashboard</h1>
+                    <p class="text-gray-400 mb-6">Welcome! This will be the main control panel for your application. You can access the Page Generator from the left menu.</p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
                         <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                            <h3 class="text-xl font-bold text-white mb-2">3 Sayfa Oluşturuldu</h3>
-                            <p class="text-gray-500">Bugüne kadar oluşturulan sayfa sayısı.</p>
+                            <h3 class="text-xl font-bold text-white mb-2">Last Update</h3>
+                            <p class="text-gray-500">Generator: October 22, 2025</p>
                         </div>
                         <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                            <h3 class="text-xl font-bold text-white mb-2">Son Güncelleme</h3>
-                            <p class="text-gray-500">Generator: 2025-10-22</p>
-                        </div>
-                        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                            <h3 class="text-xl font-bold text-white mb-2">Hızlı Erişim</h3>
-                            <button onclick="switchView('generator')" class="text-accent hover:text-indigo-400 font-semibold mt-2">Generator'a Git &rarr;</button>
+                            <h3 class="text-xl font-bold text-white mb-2">Quick Access</h3>
+                            <button onclick="switchView('generator')" class="text-accent hover:text-indigo-400 font-semibold mt-2">Go to Generator &rarr;</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Generator View (Mevcut İçerik) -->
+            <!-- Generator View (Current Content) -->
             <div id="generator-view" class="view hidden">
                 <div class="max-w-6xl mx-auto bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
                     
@@ -240,20 +235,20 @@
             const views = document.querySelectorAll('.view');
             const navButtons = document.querySelectorAll('#sidebar button');
             
-            // Görünümleri Gizle/Göster
+            // Hide/Show Views
             views.forEach(view => {
                 view.classList.add('hidden');
             });
             const selectedView = document.getElementById(viewName + '-view');
             if (selectedView) {
                 selectedView.classList.remove('hidden');
-                // Eğer mobil menü açıksa, görünüm değiştirilince kapat
+                // Close mobile menu if open when switching views
                 if (window.innerWidth < 768 && isMobileSidebarOpen) {
                     toggleMobileSidebar();
                 }
             }
 
-            // Aktif Navigasyon Butonunu Vurgula
+            // Highlight Active Navigation Button
             navButtons.forEach(button => {
                 button.classList.remove('bg-gray-800', 'active-link');
                 button.classList.add('text-gray-300', 'hover:bg-gray-800', 'hover:text-white', 'inactive-link');
@@ -264,45 +259,51 @@
                 }
             });
             
-            // Sayfa içeriği yenilendiğinde generator çalıştırılır (varsayılan değerleri yüklemek için)
+            // Run generator to load default values when accessing generator view
             if (viewName === 'generator') {
                 generateFiles();
             }
 
-            alertUser(viewName.charAt(0).toUpperCase() + viewName.slice(1) + ' sayfası açıldı.');
+            alertUser(viewName.charAt(0).toUpperCase() + viewName.slice(1) + ' view opened.');
         }
 
-        // Sidebar Collapse/Expand (Sadece Masaüstü)
+        // Sidebar Collapse/Expand (Desktop Only)
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const contentArea = document.getElementById('content-area');
             const fullTextElements = sidebar.querySelectorAll('.sidebar-full-text');
-            const iconOnlyElements = sidebar.querySelectorAll('.sidebar-icon-only');
+            const navLinkItems = sidebar.querySelectorAll('.nav-link-item');
+            const toggleIcon = document.getElementById('toggleIcon');
             
             isSidebarCollapsed = !isSidebarCollapsed;
             
             if (isSidebarCollapsed) {
-                // Daralt: Sidebar 72px, Content margin 72px
+                // Collapse: Sidebar 72px, Content margin 72px
                 sidebar.classList.add('sidebar-closed');
                 contentArea.classList.add('content-area-shifted');
 
-                // İkonları değiştir
-                document.getElementById('toggleIcon').innerHTML = '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'; // Açma oku
+                // Change icon to Open Arrow (points right)
+                toggleIcon.innerHTML = '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'; 
                 
-                // Metinleri gizle, ikonları göster
+                // Hide full text
                 fullTextElements.forEach(el => el.classList.remove('flex'));
-                iconOnlyElements.forEach(el => el.classList.remove('hidden'));
+                
+                // Center navigation icons
+                navLinkItems.forEach(item => item.classList.add('justify-center', 'px-0'));
+
             } else {
-                // Genişlet: Sidebar 280px, Content margin 280px
+                // Expand: Sidebar 280px, Content margin 280px
                 sidebar.classList.remove('sidebar-closed');
                 contentArea.classList.remove('content-area-shifted');
 
-                // İkonları değiştir
-                document.getElementById('toggleIcon').innerHTML = '<path d="M19 12H5"/><path d="m12 5-7 7 7 7"/>'; // Kapatma oku
+                // Change icon to Close Arrow (points left)
+                toggleIcon.innerHTML = '<path d="M19 12H5"/><path d="m12 5-7 7 7 7"/>'; 
 
-                // Metinleri göster, ikonları gizle
+                // Show full text
                 fullTextElements.forEach(el => el.classList.add('flex'));
-                iconOnlyElements.forEach(el => el.classList.add('hidden'));
+
+                // Restore left alignment
+                navLinkItems.forEach(item => item.classList.remove('justify-center', 'px-0'));
             }
         }
 
@@ -318,7 +319,7 @@
             }
         }
 
-        // --- GENERATOR LOGIC ---
+        // --- GENERATOR LOGIC (No changes here, remains in English/Variables) ---
 
         // --- HIDDEN TEMPLATES (Stored internally in JS) ---
         // Note: Inline CSS is used in templates for maximum compatibility when users host these pages.
@@ -422,9 +423,9 @@
             const phone = document.getElementById('phone').value.trim();
 
             if (!appName || !email || !name) {
-                // Sadece Generator görünümünde uyarı göster.
+                // Show warning only in Generator view.
                 if (activeView === 'generator') {
-                     alertUser('Lütfen Uygulama Adı, E-posta ve Geliştirici Adı alanlarını doldurun.');
+                     alertUser('Please fill in App Name, Email, and Developer Name fields.');
                 }
                 return;
             }
@@ -454,7 +455,7 @@
             document.getElementById('supportOutput').value = newSupport;
 
             if (activeView === 'generator') {
-                alertUser('HTML Kodları Başarıyla Oluşturuldu!');
+                alertUser('HTML Codes Generated Successfully!');
             }
         }
 
@@ -467,7 +468,7 @@
                 document.execCommand('copy');
                 
                 const originalText = buttonElement.textContent;
-                buttonElement.textContent = 'Kopyalandı!';
+                buttonElement.textContent = 'Copied!';
                 buttonElement.classList.remove('bg-green-500');
                 buttonElement.classList.add('bg-indigo-400');
                 buttonElement.classList.remove('hover:bg-green-600');
@@ -479,7 +480,7 @@
                     buttonElement.classList.add('hover:bg-green-600');
                 }, 1500);
             } else {
-                alertUser('Lütfen önce dosyaları oluşturun.');
+                alertUser('Please generate files first.');
             }
         }
 
@@ -500,19 +501,20 @@
             }, 3000);
         }
 
-        // Sayfa yüklendiğinde varsayılan görünümü ayarla
+        // Set default view on page load
         window.onload = function() {
-            // İlk olarak Dashboard görünümünü aç
+            // Open Dashboard view first
             switchView('dashboard'); 
             
-            // Mobil menü butonunu ayarla (eğer mobildeyse)
+            // Adjust mobile menu button visibility
             if (window.innerWidth < 768) {
                 document.getElementById('mobileMenuButton').classList.remove('hidden');
             } else {
-                // Masaüstünde ilk başta sidebar'ı geniş açık bırak
-                // toggleSidebar() fonksiyonu varsayılan olarak kapalıya geçiriyor, bu yüzden bir kez çağırıp geri açıyoruz
-                isSidebarCollapsed = true; 
-                toggleSidebar();
+                // Ensure desktop sidebar starts expanded
+                // The toggleSidebar function is called once at the start to ensure the correct state is set
+                if (isSidebarCollapsed) {
+                    toggleSidebar();
+                }
             }
         };
     </script>
