@@ -87,6 +87,18 @@
                 margin-left: 0 !important;
             }
         }
+        /* SKCore App Search Tool Specific Styles */
+        .skcore-app-search-button {
+             background-color: #4f46e5; /* bg-accent */
+             transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .skcore-app-search-button:hover {
+            background-color: #4338ca; /* hover:bg-accent\:hover */
+            transform: scale(1.02);
+        }
+        .skcore-app-search-button:disabled {
+            background-color: #6b7280; /* Gray-500 */
+        }
     </style>
 </head>
 <body class="md:flex">
@@ -128,11 +140,21 @@
                     <span class="font-medium sidebar-full-text">Page Generator</span>
                 </button>
             </li>
+
+            <!-- NEW: App Search Tool Link -->
+            <li>
+                <button onclick="switchView('app-search')" class="nav-link-item w-full flex items-center p-3 rounded-xl transition duration-150 text-gray-300 hover:bg-gray-800 hover:text-white inactive-link">
+                    <!-- Icon: Search / App Store / Globe -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4 12h2"/><path d="M20 12h2"/></svg>
+                    <!-- Text -->
+                    <span class="font-medium sidebar-full-text">App Search Tool</span>
+                </button>
+            </li>
         </ul>
         
         <!-- Footer / Developer Info (only shown when expanded) -->
         <div class="mt-8 border-t border-gray-700 pt-4 sidebar-full-text overflow-hidden">
-            <p class="text-xs text-gray-500 whitespace-nowrap">SKCore App Shell v1.1</p>
+            <p class="text-xs text-gray-500 whitespace-nowrap">SKCore App Shell v1.2</p>
         </div>
     </nav>
 
@@ -150,23 +172,23 @@
             <div id="dashboard-view" class="view hidden">
                 <div class="bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
                     <h1 class="text-4xl font-extrabold text-accent mb-4">Dashboard</h1>
-                    <p class="text-gray-400 mb-6">Welcome! This will be the main control panel for your application. You can access the Page Generator from the left menu.</p>
+                    <p class="text-gray-400 mb-6">Welcome! This is the main control panel for your application. Access the Page Generator and App Search Tools from the menu on the left.</p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
                         <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                            <h3 class="text-xl font-bold text-white mb-2">Last Update</h3>
-                            <p class="text-gray-500">Generator: October 22, 2025</p>
+                            <h3 class="text-xl font-bold text-white mb-2">Latest Update</h3>
+                            <p class="text-gray-500">App Search Tool Added: October 2025</p>
                         </div>
                         <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
                             <h3 class="text-xl font-bold text-white mb-2">Quick Access</h3>
-                            <button onclick="switchView('generator')" class="text-accent hover:text-indigo-400 font-semibold mt-2">Go to Generator &rarr;</button>
+                            <button onclick="switchView('app-search')" class="text-accent hover:text-indigo-400 font-semibold mt-2">Go to App Search Tool &rarr;</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Generator View (Current Content) -->
+            <!-- Generator View (Existing Content) -->
             <div id="generator-view" class="view hidden">
                 <div class="max-w-6xl mx-auto bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
                     
@@ -228,11 +250,238 @@
                 </div>
             </div>
 
+            <!-- NEW: App Search View (Now fully English) -->
+            <div id="app-search-view" class="view hidden">
+                <div class="max-w-6xl mx-auto bg-gray-900 shadow-2xl rounded-xl p-8 md:p-12 border border-gray-700">
+                    
+                    <h1 class="text-3xl font-extrabold text-white mb-2">SKCore App Information Query Tool</h1>
+                    <p class="text-gray-400 mb-10">Enter the app name or search term to instantly retrieve App Store details (via Vercel Proxy).</p>
+
+                    <!-- Query Area -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 p-6 rounded-xl bg-gray-800 border border-gray-700">
+                        <h2 class="md:col-span-2 text-xl font-bold text-gray-200 mb-4">App Name Query</h2>
+                        
+                        <div class="md:col-span-2 flex flex-col sm:flex-row gap-4">
+                            <!-- Input Area -->
+                            <input
+                                type="text"
+                                id="app-search-input"
+                                placeholder="E.g., Spotify or Call of Duty Mobile"
+                                class="flex-grow p-3 border border-gray-600 rounded-lg bg-gray-700 text-white shadow-sm focus:ring-accent focus:border-accent transition duration-150 ease-in-out"
+                                onkeydown="if(event.key === 'Enter') handleAppQuery()"
+                            >
+
+                            <!-- Button -->
+                            <button
+                                id="app-query-button"
+                                onclick="handleAppQuery()"
+                                class="flex-shrink-0 py-3 px-6 rounded-lg font-bold text-white shadow-lg skcore-app-search-button active:scale-[0.98] disabled:bg-gray-500"
+                            >
+                                Fetch App Details
+                            </button>
+                        </div>
+                        
+                        <!-- Loading Indicator -->
+                        <div id="app-loading-indicator" class="hidden text-center md:col-span-2">
+                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-accent"></div>
+                            <p class="text-accent mt-2 text-sm">Fetching data, please wait...</p>
+                        </div>
+                        
+                        <!-- Usage Warning Message (UPDATED) -->
+                        <p class="md:col-span-2 text-sm font-medium text-yellow-400 mt-4">
+                             ⚠️ **Usage Limit Warning:** We have a maximum of 250 queries per month for this tool. Please be mindful of this limit and restrict usage to no more than 2-3 queries per day.
+                        </p>
+                    </div>
+
+                    <!-- Results Display Area -->
+                    <div id="app-results-container" class="my-8">
+                        <!-- Query results will be placed here. -->
+                    </div>
+                </div>
+            </div>
+
         </div> <!-- max-w-6xl mx-auto End -->
 
     </main>
 
     <script>
+        // ==========================================================
+        // API CONFIGURATION AND UTILITY FUNCTIONS
+        // ==========================================================
+        
+        // VERCEL SERVERLESS FUNCTION ENDPOINT
+        const PROXY_API_URL = '/api/app-search'; 
+
+        /**
+         * A robust fetch function that retries proxy calls for network errors using exponential backoff.
+         */
+        async function exponentialBackoffFetch(url, options = {}, maxRetries = 3) {
+            let delay = 1000; 
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    
+                    if (response.ok) {
+                        return response;
+                    }
+
+                    // For 4xx and 5xx errors, throw the error without retrying.
+                    if (response.status >= 400) {
+                         const errorJson = await response.json().catch(() => ({}));
+                         let errorMessage = errorJson.error || `Proxy Server Error: Status Code ${response.status}.`;
+
+                         if (errorMessage.includes('SerpApi key')) {
+                             errorMessage = `Authorization Error: The "SERPAPI_KEY" is either not defined in your Vercel Environment Variables or there is an error in your proxy code.`;
+                         } else if (response.status === 401 || response.status === 403) {
+                             errorMessage = `Authorization Error: The server reported your API Key is invalid.`;
+                         } else if (response.status === 500) {
+                            errorMessage = `Server Error: Internal server error in Vercel proxy. Check logs.`;
+                         }
+
+                         throw { message: errorMessage };
+                    }
+                    
+                    if (i < maxRetries - 1) {
+                        console.warn(`Temporary Network Error. Retrying in ${delay / 1000} seconds... Attempt ${i + 1}/${maxRetries}`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; 
+                        continue;
+                    }
+                    
+                    throw { message: `API call failed after ${maxRetries} attempts.` };
+
+                } catch (error) {
+                    if (i < maxRetries - 1 && !error.message.includes('Authorization Error') && !error.message.includes('Server Error')) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    throw error; 
+                }
+            }
+        }
+
+        /**
+         * Fetches app details from SerpApi (via Proxy).
+         */
+        async function fetchAppDetails(searchTerm) {
+            const url = `${PROXY_API_URL}?term=${encodeURIComponent(searchTerm)}`;
+
+            try {
+                const response = await exponentialBackoffFetch(url);
+                const apiData = await response.json();
+                
+                const appData = apiData.organic_results && apiData.organic_results.length > 0
+                    ? apiData.organic_results[0]
+                    : null;
+                
+                if (!appData) {
+                    throw { message: `No results found for "${searchTerm}" on the App Store search. Please try the exact app name.` };
+                }
+
+                // --- Data Mapping ---
+                const ratingInfo = appData.rating && appData.rating.length > 0 ? appData.rating[0] : {};
+                const genreInfo = appData.genres && appData.genres.length > 0 ? appData.genres[0] : {};
+                
+                return {
+                    name: appData.title || 'Unknown',
+                    developer: appData.developer?.name || 'Unknown',
+                    store: "App Store (iOS) Search, US/Global (Secured via Proxy)",
+                    appId: appData.id || appData.bundle_id || 'N/A',
+                    
+                    // Formatting dates using en-US locale for consistency with English UI
+                    releaseDate: appData.release_date ? new Date(appData.release_date).toLocaleDateString('en-US') : 'N/A', 
+                    currentVersion: appData.version || 'N/A',
+                    latestVersionReleaseDate: appData.latest_version_release_date ? new Date(appData.latest_version_release_date).toLocaleDateString('en-US') : 'N/A', 
+                    
+                    rating: ratingInfo.rating ? parseFloat(ratingInfo.rating).toFixed(2) : 'N/A', 
+                    // Formatting numbers using en-US locale for consistency with English UI
+                    reviews: ratingInfo.count ? ratingInfo.count.toLocaleString('en-US') : 'N/A',
+                    category: genreInfo.name || 'N/A',
+                };
+
+            } catch (error) {
+                throw { message: `${error.message || "An unknown API call error occurred."}` };
+            }
+        }
+
+        // --- APP SEARCH UI FUNCTIONS ---
+
+        const appResultsContainer = () => document.getElementById('app-results-container');
+        const appLoadingIndicator = () => document.getElementById('app-loading-indicator');
+        const appQueryButton = () => document.getElementById('app-query-button');
+
+        function displayAppResults(data) {
+            let html = `<div class="p-6 bg-gray-800 shadow-xl rounded-xl border border-gray-700">
+                <h3 class="text-2xl font-bold text-accent mb-4">${data.name} Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Developer:</span> <span>${data.developer}</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Store:</span> <span>${data.store}</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">App ID/Bundle:</span> <span>${data.appId}</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Category:</span> <span>${data.category}</span></div>
+                    
+                    <div class="flex flex-col border-t border-gray-700 pt-4 mt-4 md:col-span-2">
+                        <span class="font-extrabold text-lg text-indigo-400">Release Information</span>
+                    </div>
+
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Initial Release Date:</span> <span class="text-accent font-bold">${data.releaseDate}</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Latest Version Release Date:</span> <span>${data.latestVersionReleaseDate}</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Current Version:</span> <span class="text-indigo-400 font-bold">${data.currentVersion}</span></div>
+                    
+                    <div class="flex flex-col border-t border-gray-700 pt-4 mt-4 md:col-span-2">
+                        <span class="font-extrabold text-lg text-indigo-400">Rating and Reviews</span>
+                    </div>
+                    
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Average Rating:</span> <span>${data.rating} / 5.0</span></div>
+                    <div class="flex flex-col"><span class="font-semibold text-gray-500">Total Reviews:</span> <span>${data.reviews}</span></div>
+                </div>
+            </div>`;
+            appResultsContainer().innerHTML = html;
+        }
+
+        function displayAppError(message) {
+            const html = `<div class="p-4 bg-red-900 border-l-4 border-red-500 text-red-300 rounded-lg" role="alert">
+                <p class="font-bold">Error!</p>
+                <p>${message}</p>
+            </div>`;
+            appResultsContainer().innerHTML = html;
+        }
+
+        async function handleAppQuery() {
+            const searchTerm = document.getElementById('app-search-input').value.trim();
+            appResultsContainer().innerHTML = ''; // Clear previous results
+
+            if (!searchTerm) {
+                displayAppError("Please enter an App Name or Search Term.");
+                return;
+            }
+
+            // Update UI: Show loading and disable button
+            appLoadingIndicator().classList.remove('hidden');
+            appQueryButton().disabled = true;
+            appQueryButton().textContent = 'Querying...';
+
+            try {
+                const data = await fetchAppDetails(searchTerm);
+                displayAppResults(data);
+                alertUser('App information retrieved successfully.');
+            } catch (error) {
+                console.error("Query Error:", error);
+                displayAppError(error.message || "An unknown error occurred during the query.");
+                alertUser('An error occurred during the query.');
+            } finally {
+                // Restore UI
+                appLoadingIndicator().classList.add('hidden');
+                appQueryButton().disabled = false;
+                appQueryButton().textContent = 'Fetch App Details';
+            }
+        }
+
+
+        // ==========================================================
+        // SITE SHELL MANAGEMENT (Existing Code)
+        // ==========================================================
+
         // --- VIEW MANAGEMENT ---
         let activeView = 'dashboard';
         let isSidebarCollapsed = false;
@@ -258,12 +507,17 @@
 
             // Highlight Active Navigation Button
             navButtons.forEach(button => {
-                button.classList.remove('bg-gray-800', 'active-link');
-                button.classList.add('text-gray-300', 'hover:bg-gray-800', 'hover:text-white', 'inactive-link');
+                // Only process buttons that include the switchView function call
+                if (button.onclick.toString().includes('switchView')) {
+                    const isActive = button.onclick.toString().includes(`switchView('${viewName}')`);
 
-                if (button.onclick.toString().includes(`switchView('${viewName}')`)) {
-                    button.classList.add('bg-gray-800', 'active-link');
-                    button.classList.remove('text-gray-300', 'inactive-link');
+                    if (isActive) {
+                        button.classList.add('bg-gray-800', 'active-link');
+                        button.classList.remove('text-gray-300', 'hover:bg-gray-800', 'hover:text-white', 'inactive-link');
+                    } else {
+                        button.classList.remove('bg-gray-800', 'active-link');
+                        button.classList.add('text-gray-300', 'hover:bg-gray-800', 'hover:text-white', 'inactive-link');
+                    }
                 }
             });
             
@@ -272,7 +526,7 @@
                 generateFiles();
             }
 
-            alertUser(viewName.charAt(0).toUpperCase() + viewName.slice(1) + ' view opened.');
+            // alertUser(viewName.charAt(0).toUpperCase() + viewName.slice(1) + ' view opened.'); // Devre dışı bırakıldı, gereksiz bildirim
         }
 
         // Sidebar Collapse/Expand (Desktop Only)
