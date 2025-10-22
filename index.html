@@ -12,7 +12,7 @@
             background-color: #1f2937; /* Very Dark Gray Background (Gray-800) */
             color: #d1d5db; /* Default light gray text for body */
             min-height: 100vh;
-            display: flex; /* Sidebar ve İçerik için Flex */
+            display: flex; /* Flex for Sidebar and Content */
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
         .textarea-code {
@@ -208,12 +208,18 @@
                         <div>
                             <label for="privacyOutput" class="block text-lg font-medium text-gray-300 mb-2">Privacy Policy</label>
                             <textarea id="privacyOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
-                            <button onclick="copyToClipboard('privacyOutput', this)" class="mt-3 w-full py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                            <div class="flex space-x-4 mt-3">
+                                <button onclick="copyToClipboard('privacyOutput', this)" class="w-1/2 py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                                <button onclick="previewCode('privacyOutput', 'Privacy Policy')" class="w-1/2 py-3 bg-blue-500 text-white rounded-lg text-base font-medium hover:bg-blue-600 transition">Preview</button>
+                            </div>
                         </div>
                         <div>
                             <label for="supportOutput" class="block text-lg font-medium text-gray-300 mb-2">Support Page</label>
                             <textarea id="supportOutput" readonly class="textarea-code block w-full rounded-lg border border-gray-600 shadow-inner p-4 bg-gray-800 text-green-300"></textarea>
-                            <button onclick="copyToClipboard('supportOutput', this)" class="mt-3 w-full py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                            <div class="flex space-x-4 mt-3">
+                                <button onclick="copyToClipboard('supportOutput', this)" class="w-1/2 py-3 bg-green-500 text-white rounded-lg text-base font-medium hover:bg-green-600 transition">Copy Code</button>
+                                <button onclick="previewCode('supportOutput', 'Support Page')" class="w-1/2 py-3 bg-blue-500 text-white rounded-lg text-base font-medium hover:bg-blue-600 transition">Preview</button>
+                            </div>
                         </div>
                     </div>
 
@@ -319,7 +325,7 @@
             }
         }
 
-        // --- GENERATOR LOGIC (No changes here, remains in English/Variables) ---
+        // --- GENERATOR LOGIC ---
 
         // --- HIDDEN TEMPLATES (Stored internally in JS) ---
         // Note: Inline CSS is used in templates for maximum compatibility when users host these pages.
@@ -458,6 +464,47 @@
                 alertUser('HTML Codes Generated Successfully!');
             }
         }
+
+        // --- NEW PREVIEW FUNCTIONALITY ---
+        function previewCode(elementId, title) {
+            const textarea = document.getElementById(elementId);
+            if (!textarea || !textarea.value) {
+                alertUser('Please generate files first before previewing.');
+                return;
+            }
+
+            const htmlContent = textarea.value;
+
+            // Warning message HTML structure (in English, as requested)
+            const previewWarning = `
+                <div style="background-color: #f87171; color: #1f2937; padding: 15px; border: 2px solid #ef4444; margin-bottom: 25px; border-radius: 8px; text-align: center; font-family: 'Inter', sans-serif;">
+                    <h3 style="font-weight: 900; font-size: 1.1rem; margin: 0 0 5px 0;">ATTENTION: PREVIEW MODE ONLY</h3>
+                    <p style="margin: 0; font-size: 0.9rem;">Do not use this link for public deployment. This is a temporary preview generated locally for verification. Please copy the actual code below and publish it on your chosen host (e.g., Vercel, Blogspot, your own server) for your official page. This message will <strong>NOT</strong> appear in the copied HTML code.</p>
+                </div>
+            `;
+            
+            // Inject warning right after the <body> tag for the preview only
+            // This ensures the original textarea value remains clean
+            const modifiedContent = htmlContent.replace(/<body>/, `<body>${previewWarning}`);
+
+            try {
+                // 1. Create a Blob object from the MODIFIED HTML content
+                const blob = new Blob([modifiedContent], { type: 'text/html' });
+                
+                // 2. Create a temporary URL for the Blob
+                const url = URL.createObjectURL(blob);
+                
+                // 3. Open the URL in a new tab
+                window.open(url, '_blank');
+                
+                alertUser(title + ' preview opened in a new tab.');
+
+            } catch (error) {
+                console.error("Preview failed:", error);
+                alertUser('Failed to open preview. Console logged for details.');
+            }
+        }
+        // --- END PREVIEW FUNCTIONALITY ---
 
         // Copy function
         function copyToClipboard(elementId, buttonElement) {
