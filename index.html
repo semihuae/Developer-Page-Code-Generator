@@ -13,6 +13,7 @@
             color: #d1d5db; /* Default light gray text for body */
             min-height: 100vh;
             display: flex; /* Sidebar ve İçerik için Flex */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
         }
         .textarea-code {
             resize: vertical;
@@ -28,19 +29,26 @@
         
         /* Sidebar Styles */
         #sidebar {
+            /* Masaüstünde daima sabit kalır */
+            position: fixed; 
             width: 280px;
-            /* MD öncesi fixed/transform mobil davranışını koru */
-            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            height: 100%; /* Tam yükseklik */
+            transition: width 0.3s ease-in-out;
             z-index: 50;
             flex-shrink: 0;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
         }
         .sidebar-closed {
-            width: 72px; /* Small icon view */
+            width: 72px !important; /* Small icon view */
         }
         .sidebar-closed .sidebar-full-text {
-            display: none;
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            pointer-events: none;
+            transition: opacity 0.1s ease-out, width 0.1s ease-out;
         }
+        /* İkon görünümünde sadece ikonu göster */
         .sidebar-closed .sidebar-icon-only {
             display: block !important;
         }
@@ -48,23 +56,32 @@
         /* Content Area */
         #content-area {
             flex-grow: 1;
+            /* Sidebar genişliğine göre margin-left ayarlandı */
+            margin-left: 280px; 
             padding: 2rem;
             transition: margin-left 0.3s ease-in-out;
+        }
+        .content-area-shifted {
+            margin-left: 72px !important;
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             #sidebar {
-                position: fixed;
-                height: 100%;
+                /* Mobil için varsayılan olarak gizli */
                 transform: translateX(-100%);
             }
             .sidebar-open-mobile {
                 transform: translateX(0) !important;
             }
             #content-area {
+                /* Mobil görünümde menü gizlendiği için margin 0 */
+                margin-left: 0 !important;
                 width: 100%;
-                margin-left: 0;
+            }
+            .content-area-shifted {
+                /* Mobil görünümde bu sınıfın bir etkisi olmamalı */
+                margin-left: 0 !important;
             }
         }
     </style>
@@ -72,19 +89,18 @@
 <body class="md:flex">
     
     <!-- Left Sidebar (Gezinme Menüsü) -->
-    <!-- `fixed md:sticky` kaldırıldı. Mobil davranış artık sadece CSS @media bloğunda yönetiliyor. -->
-    <nav id="sidebar" class="bg-gray-900 border-r border-gray-700 h-screen top-0 p-4 flex flex-col transition-all">
+    <!-- position: fixed ve height: 100% ile kaydırmada sabit kalması sağlandı -->
+    <nav id="sidebar" class="bg-gray-900 border-r border-gray-700 top-0 p-4 flex flex-col">
         
         <!-- Branding ve Kapatma Butonu -->
         <div class="flex items-center justify-between pb-6 mb-6 border-b border-gray-700">
-            <div class="flex items-center space-x-3">
-                <img src="https://i.ibb.co/QtmxFc3/SKCore-Logo.png" alt="SKCore Logo" class="h-9 w-auto rounded-md">
-                <span class="text-3xl font-black text-white tracking-tight sidebar-full-text">SKCore</span>
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <img src="https://i.ibb.co/QtmxFc3/SKCore-Logo.png" alt="SKCore Logo" class="h-9 w-auto rounded-md flex-shrink-0">
+                <span class="text-3xl font-black text-white tracking-tight sidebar-full-text whitespace-nowrap">SKCore</span>
             </div>
-            <!-- Toggle Button -->
+            <!-- Toggle Button (Sadece masaüstü) -->
             <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white transition hidden md:block" aria-label="Toggle Sidebar">
-                <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-full-text"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
-                <svg id="openIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon-only hidden"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
             </button>
         </div>
         
@@ -97,6 +113,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <!-- Text -->
                     <span class="font-medium sidebar-full-text">Dashboard</span>
+                    <!-- İkon görünümünde sadece ikon -->
                     <span class="sidebar-icon-only hidden ml-0.5" title="Dashboard">🏠</span>
                 </button>
             </li>
@@ -108,18 +125,20 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 flex-shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
                     <!-- Text -->
                     <span class="font-medium sidebar-full-text">Page Generator</span>
+                    <!-- İkon görünümünde sadece ikon -->
                     <span class="sidebar-icon-only hidden ml-0.5" title="Page Generator">📄</span>
                 </button>
             </li>
         </ul>
         
         <!-- Footer / Developer Info (sadece tam metin görünümünde) -->
-        <div class="mt-8 border-t border-gray-700 pt-4 sidebar-full-text">
-            <p class="text-xs text-gray-500">SKCore App Shell v1.1</p>
+        <div class="mt-8 border-t border-gray-700 pt-4 sidebar-full-text overflow-hidden">
+            <p class="text-xs text-gray-500 whitespace-nowrap">SKCore App Shell v1.1</p>
         </div>
     </nav>
 
     <!-- Content Area (Dashboard ve Generator İçeriği Buraya Gelecek) -->
+    <!-- margin-left, JS ile sidebar genişliğine göre güncellenecek -->
     <main id="content-area" class="w-full md:p-8 overflow-y-auto">
         
         <!-- Mobile Menu Toggle Button (Sadece mobil için) -->
@@ -256,16 +275,34 @@
         // Sidebar Collapse/Expand (Sadece Masaüstü)
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const contentArea = document.getElementById('content-area');
+            const fullTextElements = sidebar.querySelectorAll('.sidebar-full-text');
+            const iconOnlyElements = sidebar.querySelectorAll('.sidebar-icon-only');
+            
             isSidebarCollapsed = !isSidebarCollapsed;
             
             if (isSidebarCollapsed) {
+                // Daralt: Sidebar 72px, Content margin 72px
                 sidebar.classList.add('sidebar-closed');
-                document.getElementById('toggleIcon').classList.add('hidden');
-                document.getElementById('openIcon').classList.remove('hidden');
+                contentArea.classList.add('content-area-shifted');
+
+                // İkonları değiştir
+                document.getElementById('toggleIcon').innerHTML = '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'; // Açma oku
+                
+                // Metinleri gizle, ikonları göster
+                fullTextElements.forEach(el => el.classList.remove('flex'));
+                iconOnlyElements.forEach(el => el.classList.remove('hidden'));
             } else {
+                // Genişlet: Sidebar 280px, Content margin 280px
                 sidebar.classList.remove('sidebar-closed');
-                document.getElementById('toggleIcon').classList.remove('hidden');
-                document.getElementById('openIcon').classList.add('hidden');
+                contentArea.classList.remove('content-area-shifted');
+
+                // İkonları değiştir
+                document.getElementById('toggleIcon').innerHTML = '<path d="M19 12H5"/><path d="m12 5-7 7 7 7"/>'; // Kapatma oku
+
+                // Metinleri göster, ikonları gizle
+                fullTextElements.forEach(el => el.classList.add('flex'));
+                iconOnlyElements.forEach(el => el.classList.add('hidden'));
             }
         }
 
@@ -471,6 +508,11 @@
             // Mobil menü butonunu ayarla (eğer mobildeyse)
             if (window.innerWidth < 768) {
                 document.getElementById('mobileMenuButton').classList.remove('hidden');
+            } else {
+                // Masaüstünde ilk başta sidebar'ı geniş açık bırak
+                // toggleSidebar() fonksiyonu varsayılan olarak kapalıya geçiriyor, bu yüzden bir kez çağırıp geri açıyoruz
+                isSidebarCollapsed = true; 
+                toggleSidebar();
             }
         };
     </script>
